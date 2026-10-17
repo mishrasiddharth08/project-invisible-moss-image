@@ -62,8 +62,6 @@ endpoint. Both sides must be positive multiples of 16. Batch 1 is conservative.
 
 ![2048-square SFT portrait](docs/examples/portrait-2048.png)
 
-![3:4 portrait from supplied JSON](docs/examples/json-portrait.png)
-
 The helper maps JSON `prompt`, `negative_prompt`, `style` and `aspect_ratio` to
 normal request fields. This is a request-wrapper test, not raw JSON/layout
 interpretation. The supplied `model: ideogram-4` was explicitly overridden for
