@@ -63,3 +63,24 @@ physical smaller GPUs, masks/outpaint, hires workflows, cancellation/recovery,
 and browser/API parity require separate tests. These runs used native processing
 directly, not the browser gallery or HTTP endpoints. Structure alone cannot prove
 arbitrary model weight provenance. No physical low-VRAM claim is made.
+
+## Full installed extension startup correction
+
+The first package's isolated checks missed MiniMax H3's loader wrapper. Normal
+startup inspected that wrapper's source and incorrectly disabled MOSS. The
+compatibility check now follows reachable __wrapped__, closure, default and
+partial functions, with cycle/size bounds. A single reachable function must
+contain the full required contract; unsupported loaders still fail closed.
+
+Optional MOSS-owned Model Autolink registration adds exact architecture
+fingerprints and the correct encoder/preset policy in memory. It repairs only
+the validated MOSS encoder's stale classification and changes no Autolink files.
+Preset defaults validate actual local headers, handle Smart Rename paths and
+repair stale MOSS-specific selections without changing other model presets.
+
+43 CPU regressions passed; four real Forge adapter tests passed previously.
+A subsequent real full GUI startup with all installed extensions exposed the
+moss dropdown and correct components. A native HTTP txt2img request (512 square,
+4 steps, seed 123456, Euler/MOSS/CFG3) returned a nonblank image with correct
+MOSS metadata and saved output; request time was 17.10 seconds. This extends
+the earlier isolated evidence, not every possible plugin/version combination.

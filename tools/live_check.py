@@ -60,14 +60,15 @@ def main():
     patches.apply()
     from modules import processing, sd_models, shared
     from modules_forge.main_entry import refresh_model_loading_parameters
-    checkpoint = 'moss_image_sft_int8_convrot.safetensors'
-    for path in (args.forge / 'models/Stable-diffusion' / checkpoint,
-                 args.forge / 'models/text_encoder/qwen3.5_9b_int8_convrot.safetensors',
-                 args.forge / 'models/VAE/flux2-vae.safetensors'):
+    from forge_moss.native.assets import discover
+    found = discover(args.forge/'models')
+    assert found, 'Missing compatible MOSS checkpoint, encoder or full FLUX.2 VAE'
+    checkpoint_path, encoder_path, vae_path = found
+    checkpoint = checkpoint_path.name
+    for path in found:
         assert path.is_file(), f'Missing required model: {path}'
     shared.opts.data.update(sd_model_checkpoint=checkpoint, forge_unet_storage_dtype='Automatic',
-        forge_additional_modules=[str(args.forge / 'models/text_encoder/qwen3.5_9b_int8_convrot.safetensors'),
-                                  str(args.forge / 'models/VAE/flux2-vae.safetensors')],
+        forge_additional_modules=[str(encoder_path), str(vae_path)],
         samples_save=True, grid_save=False, samples_format='png')
     sd_models.list_models()
     refresh_model_loading_parameters()

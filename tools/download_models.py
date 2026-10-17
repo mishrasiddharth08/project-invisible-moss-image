@@ -30,6 +30,15 @@ def main():
         spec = files[f'{folder}/{filename}']
         destination = args.forge / 'models' / target / filename
         destination.parent.mkdir(parents=True, exist_ok=True)
+        if not destination.exists():
+            for candidate in destination.parent.rglob('*.safetensors'):
+                if candidate.stat().st_size != spec['size']:
+                    continue
+                with candidate.open('rb') as handle:
+                    existing_hash = hashlib.file_digest(handle, 'sha256').hexdigest()
+                if existing_hash == HASHES[filename]:
+                    print(f'Verified existing (possibly renamed): {candidate}', flush=True)
+                    return
         partial = destination.with_suffix('.safetensors.partial')
         if destination.exists():
             partial = destination

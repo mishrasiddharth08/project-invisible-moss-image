@@ -156,5 +156,14 @@ def apply() -> None:
         # the model still works: Euler, MOSS, 50 steps, CFG 3 by hand
         logger.warning(f"[MOSS-Image] could not add the moss UI preset: {e}")
 
+    try:
+        from . import autolink
+        from modules import script_callbacks
+
+        autolink.register()
+        script_callbacks.on_before_ui(autolink.register)
+    except Exception as e:
+        logger.warning(f"[MOSS-Image] optional Model Autolink integration unavailable: {e}")
+
     _applied = True
     print(f"[MOSS-Image] native backend enabled (torch {torch.__version__})")

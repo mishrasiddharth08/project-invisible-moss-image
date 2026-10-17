@@ -1,0 +1,55 @@
+{
+  "preset": "moss",
+  "checkpoint": "moss_image-sft-int8_convrot.safetensors",
+  "modules": [
+    "qwen3.5_9b_int8_convrot.safetensors",
+    "FLUX.2-VAE--For-ERNIE-Image+FLUX.2-Dev+FLUX.2-Klein-4B+FLUX.2-Klein-9B+Ideogram4.safetensors"
+  ],
+  "seconds": 17.10115120000046,
+  "info": {
+    "prompt": "A red ceramic mug on a wooden table.",
+    "all_prompts": [
+      "A red ceramic mug on a wooden table."
+    ],
+    "negative_prompt": "",
+    "all_negative_prompts": [
+      ""
+    ],
+    "seed": 123456,
+    "all_seeds": [
+      123456
+    ],
+    "subseed": 4169155697,
+    "all_subseeds": [
+      4169155697
+    ],
+    "subseed_strength": 0,
+    "width": 512,
+    "height": 512,
+    "sampler_name": "Euler",
+    "cfg_scale": 3.0,
+    "steps": 4,
+    "batch_size": 1,
+    "restore_faces": false,
+    "face_restoration_model": null,
+    "sd_model_name": "moss_image-sft-int8_convrot",
+    "sd_model_hash": "b4d1475bc7",
+    "sd_vae_name": null,
+    "sd_vae_hash": null,
+    "seed_resize_from_w": -1,
+    "seed_resize_from_h": -1,
+    "denoising_strength": null,
+    "extra_generation_params": {
+      "Schedule type": "MOSS"
+    },
+    "index_of_first_image": 0,
+    "infotexts": [
+      "A red ceramic mug on a wooden table.\nSteps: 4, Sampler: Euler, Schedule type: MOSS, CFG scale: 3.0, Seed: 123456, Size: 512x512, Model: moss_image-sft-int8_convrot, Model hash: b4d1475bc7, Module 1: FLUX.2-VAE--For-ERNIE-Image+FLUX.2-Dev+FLUX.2-Klein-4B+FLUX.2-Klein-9B+Ideogram4, Module 2: qwen3.5_9b_int8_convrot, RNG: CPU, Version: neo-2.30"
+    ],
+    "styles": [],
+    "job_timestamp": "20261017134425",
+    "clip_skip": 2,
+    "is_using_inpainting_conditioning": false,
+    "version": "neo-2.30"
+  }
+}

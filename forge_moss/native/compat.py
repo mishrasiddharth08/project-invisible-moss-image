@@ -4,6 +4,7 @@
 
 import importlib
 import inspect
+from collections import deque
 
 # what the backend imports or patches, by module; an older Forge Neo misses some of these
 REQUIRED = {
@@ -36,6 +37,49 @@ LOADER_BRANCHES = ("Krea2Transformer2DModel", "AutoencoderKLFlux2", "Qwen3Model"
 LOADER_SOURCE = ("from backend.nn.llm.llama import Qwen3_8B", "from backend.nn.krea import SingleStreamDiT")
 
 
+def _loader_source(function) -> str:
+    """Find the required runtime contract behind cooperative extension wrappers.
+
+    Inspect only reachable Python functions, never substitute the on-disk loader
+    for an incompatible active callable. Require one function to contain the whole
+    contract; snippets from unrelated wrappers cannot combine into a false pass.
+    """
+    queue = deque([function])
+    seen = set()
+    fallback = ""
+    required = tuple(f'"{name}"' for name in LOADER_BRANCHES) + LOADER_SOURCE
+    while queue and len(seen) < 64:
+        candidate = queue.popleft()
+        if id(candidate) in seen:
+            continue
+        seen.add(id(candidate))
+        if not inspect.isfunction(candidate):
+            wrapped = getattr(candidate, "func", None)  # functools.partial
+            if inspect.isfunction(wrapped):
+                queue.append(wrapped)
+            continue
+        try:
+            source = inspect.getsource(candidate)
+        except (OSError, TypeError, ValueError):
+            source = ""
+        fallback = fallback or source
+        if all(token in source for token in required):
+            return source
+        wrapped = getattr(candidate, "__wrapped__", None)
+        if inspect.isfunction(wrapped):
+            queue.append(wrapped)
+        queue.extend(value for value in (candidate.__defaults__ or ()) if inspect.isfunction(value))
+        queue.extend(value for value in (candidate.__kwdefaults__ or {}).values() if inspect.isfunction(value))
+        for cell in candidate.__closure__ or ():
+            try:
+                value = cell.cell_contents
+            except ValueError:
+                continue
+            if inspect.isfunction(value):
+                queue.append(value)
+    return fallback
+
+
 def check() -> list[str]:
     problems: list[str] = []
 
@@ -52,7 +96,7 @@ def check() -> list[str]:
     if not problems:
         from backend import loader, operations
 
-        source = inspect.getsource(loader.load_huggingface_component)
+        source = _loader_source(loader.load_huggingface_component)
         missing = [b for b in LOADER_BRANCHES if f'"{b}"' not in source]
         if missing:
             problems.append(f"the model loader has no {', '.join(missing)} branch")

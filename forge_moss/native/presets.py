@@ -59,3 +59,24 @@ def register() -> None:
     for key, info in templates.items():
         if _is_preset_option(key) and key not in shared.opts.data_labels:
             shared.opts.add_option(key, info)
+
+    # Give a new model preset its own validated selection before shared preset
+    # integrations can inherit the previously selected model's components.
+    from modules import paths, sd_models
+    from . import assets
+
+    found = assets.discover(paths.models_path)
+    if found:
+        checkpoint, encoder, vae = found
+        checkpoint_key = f'forge_checkpoint_{PRESET}'
+        modules_key = f'forge_additional_modules_{PRESET}'
+        saved_checkpoint = shared.opts.data.get(checkpoint_key)
+        matching = next((info for info in sd_models.checkpoints_list.values()
+                         if saved_checkpoint in (info.name, info.title, info.filename)
+                         and assets.valid_checkpoint(info.filename)), None)
+        if matching is None:
+            shared.opts.data[checkpoint_key] = checkpoint.name
+        saved_modules = shared.opts.data.get(modules_key) or []
+        if not (len(saved_modules) == 2 and any(assets.valid_encoder(p) for p in saved_modules)
+                and any(assets.valid_vae(p) for p in saved_modules)):
+            shared.opts.data[modules_key] = [str(encoder), str(vae)]

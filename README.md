@@ -86,13 +86,18 @@ untested. See [adapter evidence](docs/ADAPTERS.md).
 
 ## Validation and limits
 
-32 regression tests plus four actual Forge adapter tests passed. Tiny-model
+43 regression tests plus four actual Forge adapter tests passed. Tiny-model
 CUDA reference checks passed in FP32/BF16. Live txt2img/img2img checked saved
 pixels against returned images, metadata, checkpoint and actual MOSS engine.
 Portraits were visually inspected.
 
-Tests used native processing, built-ins enabled, other third-party extensions
-disabled. Browser gallery, HTTP API parity, all third-party combinations,
+Initial tests used native processing with third-party extensions disabled.
+The installed full extension set subsequently passed real UI startup, MOSS
+dropdown/component selection and a saved 512px HTTP API generation. Loader
+compatibility now follows cooperative wrappers, and optional Model Autolink
+registration distinguishes MOSS's Qwen3.5 encoder from Qwen-Image encoders.
+Renamed compatible assets are discovered and stale MOSS preset names repaired.
+Browser gallery interaction, complete HTTP API parity, all third-party combinations,
 cancellation, masks/outpaint, hires and model-switch recovery need separate
 checks. Base/BF16 full images and physical smaller GPUs were not tested.
 Registration uses internal version-bound hooks with startup compatibility checks.
