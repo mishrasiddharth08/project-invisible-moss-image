@@ -23,7 +23,10 @@ venv/
 
 # Local agent notes and docs
 AGENTS*.md
-docs/
+docs/*
+!docs/*.md
+!docs/examples/
+!docs/results/
 
 # Test packages
 dist/

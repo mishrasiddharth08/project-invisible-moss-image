@@ -1,156 +1,114 @@
-# 🖼️ MOSS-Image for Forge Neo
+# Project Invisible MOSS-Image for Forge Neo
 
-<div align="center">
+Native MOSS generation using Forge Neo's checkpoint selector, **moss** preset,
+normal **Generate**, img2img, saving and adapter system. No extra environment,
+server, private model panel or Forge core-file edits.
 
-[![Forge Neo](https://img.shields.io/badge/Forge-Neo-blue)](https://github.com/Haoming02/sd-webui-forge-classic/tree/neo)
-[![Gradio](https://img.shields.io/badge/Gradio-4.40.0-orange)](https://gradio.app/)
-[![Version](https://img.shields.io/badge/Version-0.1.0-brightgreen)](https://github.com/eduardoabreu81/moss-image-forge-neo)
-[![License](https://img.shields.io/badge/License-AGPL--3.0-green.svg)](LICENSE)
+Based on [Eduardo Abreu's native integration](https://github.com/eduardoabreu81/moss-image-forge-neo)
+at `ce01661dce6626464607382112b3fa05af432075`. Original licenses, notices and
+reference tests are retained. Local improvements reuse one position table,
+remove an unnecessary GPU synchronization, strengthen component validation,
+and add verified downloads and reproducible native checks.
 
-> **Extension for [Stable Diffusion WebUI Forge - Neo](https://github.com/Haoming02/sd-webui-forge-classic/tree/neo)**
+## Install
 
-</div>
+1. In Forge Neo's Extensions page, install from:
+   `https://github.com/mishrasiddharth08/project-invisible-moss-image`.
+2. Restart. Use an up-to-date Forge **Neo**.
+3. Download matching files from [Comfy-Org/MOSS-Image](https://huggingface.co/Comfy-Org/MOSS-Image):
 
-Generate with **[MOSS-Image](https://huggingface.co/OpenMOSS-Team/MOSS-Image-SFT)** inside Forge Neo, using the checkpoint, preset and Generate button you already know - text-to-image with sharp text in English and Chinese, image-to-image, and layouts placed with boxes in the prompt.
+| File | Forge folder |
+| --- | --- |
+| `moss_image_sft_int8_convrot.safetensors` | `models/Stable-diffusion` |
+| `qwen3.5_9b_int8_convrot.safetensors` | `models/text_encoder` |
+| `flux2-vae.safetensors` | `models/VAE` |
 
-> [!Important]
-> This extension requires an up-to-date **Forge Neo** (the `neo` branch). On an older version it stays disabled and tells you so in the console - Forge Neo itself keeps working as usual.
+Optional setup helper: `tools/download_models.py --forge "<Forge folder>"`.
+Run with Python 3.11+. It downloads about 15.5 GB, resumes partial files, and
+checks fixed publisher SHA256 hashes at revision
+`6c170adf6af419f9877872ae9c7d397fcb341b99`. No generation-time downloads or
+shared GPU-library changes. Do not reuse a Qwen-Image prompt-enhancer encoder.
 
----
+4. Choose **moss**, the SFT checkpoint, and both components under
+   **VAE / Text Encoder**. Leave **Diffusion in Low Bits** at **Automatic**;
+   the files already contain INT8 ConvRot weights.
+5. Start with **Euler**, **MOSS**, **50 steps**, **CFG 3**, **1024×1024**,
+   batch 1, empty negative prompt. Use normal **Generate**.
 
-## 📋 Table of Contents
+## Measured speed and memory
 
-- [What's New](#-whats-new)
-- [Features](#-features)
-- [Installation](#-installation)
-- [Recommended Settings](#%EF%B8%8F-recommended-settings)
-- [Tips](#-tips)
-- [Credits](#-credits)
+RTX 5090, Forge `neo-2.30`, Torch `2.13.0+cu130`, SFT INT8 ConvRot and original
+Qwen3.5 INT8 ConvRot encoder. Individual native runs. Seconds include model
+loading/transfers, encoding, sampling, decoding and saving; exclude app startup.
+Memory is the process's peak allocated GPU memory.
 
----
+| Request | Seconds | Peak GiB |
+| --- | ---: | ---: |
+| txt2img, 1024×1024, 50 steps | 39.96 | 14.82 |
+| Portrait, 2048×2048, 50 steps | 115.01 | 18.87 |
+| JSON-request portrait, 1248×1664, 50 steps | 61.09 | 16.91 |
+| img2img, 512×512, 12 requested steps, strength 0.6 | 13.72 | 13.22 |
 
-## 🆕 What's New
+These are measurements, not speedup or physical low-VRAM claims. Forge owns
+memory, offloading, quantization and attention. The bounded position buffer
+follows model device moves. An alternative Qwen attention implementation was
+benchmarked, found slower, and discarded.
 
-### v0.1.0 - First Release
+The [official guide](https://github.com/OpenMOSS/MOSS-Image/blob/main/USERGUIDE.md)
+recommends roughly 1–2 MP; 2048 square is its documented 4MP extrapolation
+endpoint. Both sides must be positive multiples of 16. Batch 1 is conservative.
 
-- **MOSS-Image in Forge Neo** - OpenMOSS's SFT and Base models, with their Qwen3.5 9B text encoder
-- **Image-to-image** and **layouts by boxes** - put things where you want them with a JSON layout in the prompt
-- **moss** UI preset and **MOSS** schedule - upstream's settings, ready to generate
-- **Upstream's guidance** - the negative pass skips block 22, as the official pipeline does, with a setting to change it
+## Actual local outputs
 
----
+![2048-square SFT portrait](docs/examples/portrait-2048.png)
 
-## 🎯 Features
+![3:4 portrait from supplied JSON](docs/examples/json-portrait.png)
 
-### 🖼️ Native Generation
+The helper maps JSON `prompt`, `negative_prompt`, `style` and `aspect_ratio` to
+normal request fields. This is a request-wrapper test, not raw JSON/layout
+interpretation. The supplied `model: ideogram-4` was explicitly overridden for
+this MOSS comparison and recorded alongside the actual model. In the GUI, use
+normal prompt/negative/size controls. The JSON output matched pose, clothing,
+cars and cool grain well but cropped the boots. Source preservation cannot be
+tested without a source image. Not every instruction passed.
 
-<p align="center"><img src=".github/images/text-rendering.jpg" alt="A refrigerator with a sticky note in Chinese, and another one with a note that reads Moss works on Forge Neo" width="720"></p>
+## Quantization and adapters
 
-- Runs inside txt2img and img2img - no separate tab, no extra environment
-- Works with the Forge Neo model folders and the **VAE / Text Encoder** selector you already use
-- Uses the same autoencoder as FLUX.2 and FLUX 3 - if you have `flux2-vae`, you already have it
-- Writes the text you put in quotes in the prompt, in English and in Chinese
-- About a minute per 1024x1024 image at 50 steps on an A40 with the INT8 files
+**Live validated:** SFT INT8 ConvRot pair. BF16/FP16/FP32 have structural support.
+Other Forge-native formats have different evidence levels; GGUF, FP8, NVFP4
+and W4A4 are untested for MOSS. GPTQ/AWQ/NF4 and Nunchaku are unsupported by
+this native route. See the [format matrix](docs/QUANTIZATION.md).
 
-### 📝 Text and Posters
+Use the normal Forge LoRA picker. Four actual Forge numerical tests cover
+fused/unfused LoRA, fused LoKr and INT8 ConvRot LoRA requantization. Full-size
+released MOSS adapters, other adapter types and all combinations remain
+untested. See [adapter evidence](docs/ADAPTERS.md).
 
-<p align="center"><img src=".github/images/poster-and-guidance.jpg" alt="A travel poster titled PORTO AZUL with Summer Festival 2026 at the bottom, and the refrigerator made with plain CFG" width="720"></p>
+## Validation and limits
 
-- Titles, captions and signs come out as written - put the exact words in quotes
-- Any size that is a multiple of 16, such as 832x1248 for a poster
+32 regression tests plus four actual Forge adapter tests passed. Tiny-model
+CUDA reference checks passed in FP32/BF16. Live txt2img/img2img checked saved
+pixels against returned images, metadata, checkpoint and actual MOSS engine.
+Portraits were visually inspected.
 
-### 📐 Layout by Boxes
+Tests used native processing, built-ins enabled, other third-party extensions
+disabled. Browser gallery, HTTP API parity, all third-party combinations,
+cancellation, masks/outpaint, hires and model-switch recovery need separate
+checks. Base/BF16 full images and physical smaller GPUs were not tested.
+Registration uses internal version-bound hooks with startup compatibility checks.
+See [full evidence](docs/VALIDATION.md).
 
-<p align="center"><img src=".github/images/layout.jpg" alt="A vase, a chalkboard that reads MOSS LAYOUT and a teapot placed left to right by boxes, with the Base and the SFT model" width="720"></p>
+To disable: choose another preset, remove this extension folder, restart Forge.
+Separate model files remain. Restart after extension updates.
 
-- Tell the model where each thing goes: write the whole prompt as a JSON layout, in the format of [MOSS-Image's user guide](https://github.com/OpenMOSS/MOSS-Image/blob/main/USERGUIDE.md#layout-prompts-experimental)
-- A `summary.caption` for the whole scene, then one item per thing with its `caption`, its `text` if it is writing, and its `bbox`
-- Boxes are `[top, left, bottom, right]` in pixels from the center of the picture - on a 1024x1024 image both axes go from -512 to 512
-- Works with the Base and the SFT model; give boxes that make sense in the scene - things placed where they could not stand tend to follow the caption instead
+## Credits and license
 
-### 🔁 Image-to-Image
+- Eduardo Abreu: original native Forge integration and tests.
+- [OpenMOSS](https://github.com/OpenMOSS/MOSS-Image): model and reference pipeline.
+- [Forge Neo](https://github.com/Haoming02/sd-webui-forge-classic/tree/neo): host.
+- ComfyUI / Comfy-Org: encoder implementation, packaging and quantization kernels.
+- Qwen team and Hugging Face Transformers: encoder and reference implementation.
 
-<p align="center"><img src=".github/images/img2img.jpg" alt="The refrigerator with a Moss works on Forge Neo note, and the same picture redone in img2img with a note that reads Img2img works too" width="720"></p>
-
-- Put a picture in img2img and describe the result: with **Denoising strength** around 0.6 the scene stays and the details you change follow the prompt
-
-### 🧭 Upstream's Guidance
-
-- The negative-prompt pass of CFG leaves out block 22 of the model, as the official pipeline does by default
-- Change it under **Settings → Stable Diffusion → [MOSS-Image] Blocks skipped in the negative-prompt pass**: other blocks, comma-separated, or empty for plain CFG
-
-### 🛡️ Safe by Design
-
-- Changes no Forge Neo file - remove the extension and everything is as it was
-- Checks your Forge Neo at startup and stays disabled if something it needs is missing
-- Tells you which file is missing under **VAE / Text Encoder** instead of failing with a generic error
-- Other models are not affected
-
----
-
-## 📦 Installation
-
-1. Open Forge Neo WebUI
-2. Go to **Extensions** → **Install from URL**
-3. Paste: `https://github.com/eduardoabreu81/moss-image-forge-neo`
-4. Click **Install** and restart the WebUI
-5. Download the files from [Comfy-Org/MOSS-Image](https://huggingface.co/Comfy-Org/MOSS-Image) and place them in the usual folders:
-
-| Part | File | Folder |
-| :--- | :--- | :--- |
-| MOSS-Image checkpoint | `moss_image_sft_int8_convrot` - or `moss_image_base_int8_convrot` for the Base model | `models/Stable-diffusion` |
-| Qwen3.5 9B text encoder | `qwen3.5_9b_int8_convrot` | `models/text_encoder` |
-| FLUX.2 autoencoder | `flux2-vae` | `models/VAE` |
-
-6. Restart Forge Neo, so the new text encoder shows up in the list
-7. Pick the **moss** UI preset, the checkpoint, and the text encoder and autoencoder under **VAE / Text Encoder**
-
-> [!Note]
-> Tested with the INT8 files of the SFT and Base models, on an NVIDIA A40 and an RTX A6000. The BF16 files of the same repository have not been tested yet.
-
----
-
-## ⚙️ Recommended Settings
-
-| Sampler | Schedule type | Steps | CFG |
-| :--- | :--- | :--- | :--- |
-| Euler | MOSS | 50 | 3 |
-
-The **moss** preset sets these values; change them on the **MOSS** page of **Settings** and the preset keeps yours. Leave the **negative prompt** empty with the SFT model; with the Base model, the user guide suggests `nsfw, worst quality, bad anatomy, watermark, jpeg artifact`. Use sides that are a multiple of 16.
-
----
-
-## 💡 Tips
-
-- Write full captions - the scene, the objects, where they are, and the exact text in quotes
-- Use Euler and the MOSS schedule; Simple gives nearly the same steps
-- New text encoder files appear in the list after a restart of Forge Neo
-- Before uninstalling, switch the UI preset to another one
-
----
-
-## 📄 Credits
-
-- **[Forge Neo](https://github.com/Haoming02/sd-webui-forge-classic/tree/neo)** by Haoming02
-- **[MOSS-Image](https://github.com/OpenMOSS/MOSS-Image)** by the OpenMOSS Team - the model and its reference pipeline
-- **[ComfyUI](https://github.com/comfyanonymous/ComfyUI)** by comfyanonymous and Comfy-Org - the Qwen3.5 implementation this port follows, and the INT8 files
-- **[Qwen3.5](https://huggingface.co/Qwen)** by the Qwen team - the text encoder
-- **[Transformers](https://github.com/huggingface/transformers)** by Hugging Face - the Qwen3.5 reference
-
-The MOSS-Image weights are released by the OpenMOSS Team under the Apache License 2.0; this extension does not include them.
-
----
-
-## 📜 License
-
-AGPL-3.0 - see [LICENSE](LICENSE)
-
----
-
-<div align="center">
-
-Made with ❤️ for the Stable Diffusion community
-
-**[Report Bug](https://github.com/eduardoabreu81/moss-image-forge-neo/issues)** • **[Request Feature](https://github.com/eduardoabreu81/moss-image-forge-neo/issues)** • **[☕ Ko-fi](https://ko-fi.com/eduardoabreu81)**
-
-</div>
+Extension: **AGPL-3.0**, [LICENSE](LICENSE). Preserved third-party terms:
+[NOTICE](NOTICE), [LICENSE-APACHE](LICENSE-APACHE). Weights are separate; check
+their publisher licenses. No credentials or model weights are included.

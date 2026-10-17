@@ -134,5 +134,26 @@ class TestRealCheckpoints(unittest.TestCase):
         self.assertFalse(detect.detect(header)["fused_qkv"])
 
 
+class TestComponentContracts(unittest.TestCase):
+    @staticmethod
+    def shaped(shape):
+        return {"dtype": "BF16", "shape": list(shape)}
+
+    def test_flux2_vae_requires_its_real_structure(self):
+        vae = {key: self.shaped(shape) for key, shape in checkpoints.VAE_SHAPES.items()}
+        checkpoints.check_vae(vae)
+        for bad in ({f"x.{i}": self.shaped((1,)) for i in range(32)},
+                    {**vae, "decoder.conv_in.weight": self.shaped((512, 16, 3, 3))}):
+            with self.assertRaisesRegex(ValueError, "FLUX.2 autoencoder"):
+                checkpoints.check_vae(bad)
+
+    def test_unvalidated_multimodal_qwen35_is_not_reused(self):
+        released = json.loads((FIXTURES / "qwen3.5_9b_int8_convrot.shapes.json").read_text())
+        self.assertEqual(checkpoints.text_encoder_prefix(released), "model.language_model.")
+        prompt_enhancer = {k: v for k, v in released.items() if not k.startswith("mtp.")}
+        with self.assertRaisesRegex(ValueError, "cannot validate.*MTP head is missing"):
+            checkpoints.text_encoder_prefix(prompt_enhancer)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -1,0 +1,14 @@
+{
+  "seconds": 115.01423609999983,
+  "peak_allocated_gib": 18.869507312774658,
+  "peak_reserved_gib": 22.892578125,
+  "checkpoint": "moss_image_sft_int8_convrot.safetensors",
+  "seed": 123456,
+  "steps": 50,
+  "size": 2048,
+  "task": "txt2img",
+  "output": "examples/portrait-2048.png",
+  "infotext": "Photorealistic fine art portrait photograph of an adult woman aged 30, head and shoulders, three-quarter view, looking directly into the camera, warm brown eyes with natural catchlights, dark brown wavy hair, realistic natural skin texture with fine pores and subtle freckles, minimal natural makeup, wearing a simple ivory linen blouse, softly lit by a large window, gentle shadow modeling, neutral warm gray studio background, 85mm portrait lens, f/4, eyes sharply in focus, subtle depth of field, lifelike colors, refined professional editorial photography, accurate anatomy, quiet confident expression, no writing, no watermark.\nSteps: 50, Sampler: Euler, Schedule type: MOSS, CFG scale: 3, Seed: 123456, Size: 2048x2048, Model: moss_image_sft_int8_convrot, Model hash: b4d1475bc7, Module 1: qwen3.5_9b_int8_convrot, Module 2: flux2-vae, RNG: CPU, Version: neo-2.30",
+  "torch": "2.13.0+cu130",
+  "gpu": "NVIDIA GeForce RTX 5090"
+}

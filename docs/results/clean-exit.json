@@ -1,0 +1,17 @@
+{
+  "seconds": 9.117029500000172,
+  "peak_allocated_gib": 13.220915794372559,
+  "peak_reserved_gib": 13.484375,
+  "checkpoint": "moss_image_sft_int8_convrot.safetensors",
+  "seed": 123456,
+  "steps": 4,
+  "size": 512,
+  "width": 512,
+  "height": 512,
+  "json_request": {},
+  "task": "txt2img",
+  "output": "Local validation image retained outside release",
+  "infotext": "A studio photograph of a red ceramic mug on a wooden table. A white card reads \"MOSS WORKS\".\nSteps: 4, Sampler: Euler, Schedule type: MOSS, CFG scale: 3, Seed: 123456, Size: 512x512, Model: moss_image_sft_int8_convrot, Model hash: b4d1475bc7, Module 1: qwen3.5_9b_int8_convrot, Module 2: flux2-vae, RNG: CPU, Version: neo-2.30",
+  "torch": "2.13.0+cu130",
+  "gpu": "NVIDIA GeForce RTX 5090"
+}

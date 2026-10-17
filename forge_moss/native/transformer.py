@@ -170,6 +170,18 @@ class MossImageDiT(nn.Module):
         self.final_norm_video = RMSNorm(dim)
         self.final_linear_video = nn.Linear(dim, latent_channels, bias=False)
         self.video_head_modulation = nn.Linear(dim, 2 * dim)
+        # One geometry only; no prompt states or model weights are retained here.
+        self.register_buffer("_rope_cache", None, persistent=False)
+        self._rope_key = None
+
+    def positional_encoding(self, height, width, text_length, device, dtype):
+        key = (height, width, text_length, self.dim // self.num_heads, self.rope_base, device, dtype)
+        if (self._rope_key != key or self._rope_cache is None
+                or self._rope_cache.device != device or self._rope_cache.dtype != dtype):
+            self._rope_cache = rope_table(height, width, text_length, self.dim // self.num_heads,
+                                          self.rope_base, device).to(dtype)
+            self._rope_key = key
+        return self._rope_cache
 
     def skipped(self, transformer_options, batch, device):
         """(B,) True where block skipping applies (the negative-prompt pass), or None when nothing is skipped."""
@@ -179,7 +191,7 @@ class MossImageDiT(nn.Module):
             return None
         per_chunk = batch // len(chunks)
         flags = torch.tensor([c == UNCOND for c in chunks], device=device).repeat_interleave(per_chunk)
-        return layers, flags
+        return layers, flags, all(c == UNCOND for c in chunks)
 
     def forward(self, x, timestep, context, transformer_options=None, **kwargs):
         """x (B, 128, H, W) latents, timestep (B,) = sigma, context (B, T, 4096) -> velocity (B, 128, H, W)."""
@@ -199,7 +211,7 @@ class MossImageDiT(nn.Module):
         head = self.video_head_modulation(time.to(dtype)).view(b, 2, -1)
 
         image_tokens = h * w
-        rope = rope_table(h, w, context.shape[1], self.dim // self.num_heads, self.rope_base, device).to(dtype)
+        rope = self.positional_encoding(h, w, context.shape[1], device, dtype)
         video = self.video_embedder(x.flatten(2).transpose(1, 2).to(dtype)).to(res_dtype)
         text = self.text_embedder(context, rope[image_tokens:], dtype, res_dtype, transformer_options)
         tokens = torch.cat((video, text), 1)
@@ -208,7 +220,7 @@ class MossImageDiT(nn.Module):
         skip = self.skipped(transformer_options, b, device)
         for index, layer in enumerate(self.layers):
             if skip is not None and index in skip[0]:
-                if bool(skip[1].all()):
+                if skip[2]:
                     continue
                 tokens = torch.where(skip[1][:, None, None], tokens,
                                      layer(tokens, rope, mod, dtype, transformer_options))
