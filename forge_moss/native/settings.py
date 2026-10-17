@@ -38,3 +38,9 @@ def register() -> None:
     if OPTION not in shared.opts.data_labels:
         shared.opts.add_option(OPTION, OptionInfo(DEFAULT, LABEL, section=SECTION, category_id=CATEGORY,
                                                   infotext="MOSS skip").info(INFO))
+    if 'moss_spectrum' not in shared.opts.data_labels:
+        import gradio as gr
+        shared.opts.add_option('moss_spectrum', OptionInfo('Off', '[MOSS] Spectrum acceleration', gr.Dropdown,
+            {'choices': ['Off', 'Balanced']}, section=SECTION, category_id=CATEGORY,
+            infotext='MOSS Spectrum mode').info(
+                'Balanced forecasts some steps and changes the result. Euler + MOSS only; Off preserves full inference.'))

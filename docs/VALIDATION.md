@@ -84,3 +84,18 @@ moss dropdown and correct components. A native HTTP txt2img request (512 square,
 4 steps, seed 123456, Euler/MOSS/CFG3) returned a nonblank image with correct
 MOSS metadata and saved output; request time was 17.10 seconds. This extends
 the earlier isolated evidence, not every possible plugin/version combination.
+
+## Spectrum-style velocity forecasting
+
+53 CPU regressions passed, including real-only history, CFG separation,
+conditioning invalidation, finite/change guards, memory limits, preservation of
+other close hooks, and weak-reference proof that a resident model does not
+retain closed requests. The earlier four actual Forge adapter checks remain
+separate evidence; full-weight adapter/Spectrum combinations were not tested.
+
+Corrected full-extension multi-request sequence completed with actual SFT INT8
+ConvRot inference. Matched 1024-square, 50-step requests recorded sampling/decode
+times of 20.6386 -> 15.3419 s (portrait) and 20.0694 -> 15.2931 s (hands).
+Each accelerated request made 76 real and 24 forecast DiT calls; retained cache
+was 8.69 and 8.49 MiB respectively. Portrait, hands and exploratory text pairs
+were visually inspected locally. Details and limits: SPECTRUM.md.

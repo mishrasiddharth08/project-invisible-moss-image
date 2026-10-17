@@ -58,6 +58,15 @@ The [official guide](https://github.com/OpenMOSS/MOSS-Image/blob/main/USERGUIDE.
 recommends roughly 1–2 MP; 2048 square is its documented 4MP extrapolation
 endpoint. Both sides must be positive multiples of 16. Batch 1 is conservative.
 
+## Optional Spectrum acceleration
+
+Spectrum-style velocity forecasting is now available under **Settings > Stable
+Diffusion > [MOSS] Spectrum acceleration > Balanced**. Restart after updating.
+Off is the default; Balanced approximates selected steps and can change pixels.
+Matched RTX 5090 tests reduced sampling/decode time by **24–26%**, with about
+**8.5 MiB** retained cache at 1024 square. This is not a full-request speedup
+claim. See [method, measurements and limits](docs/SPECTRUM.md).
+
 ## Actual local outputs
 
 ![2048-square SFT portrait](docs/examples/portrait-2048.png)
@@ -84,7 +93,7 @@ untested. See [adapter evidence](docs/ADAPTERS.md).
 
 ## Validation and limits
 
-43 regression tests plus four actual Forge adapter tests passed. Tiny-model
+53 regression tests plus four actual Forge adapter tests passed. Tiny-model
 CUDA reference checks passed in FP32/BF16. Live txt2img/img2img checked saved
 pixels against returned images, metadata, checkpoint and actual MOSS engine.
 Portraits were visually inspected.

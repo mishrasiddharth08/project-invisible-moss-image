@@ -1,0 +1,65 @@
+{
+  "scope": "sampling and decode only; no prompt encoding, saving or API transport",
+  "environment": "RTX 5090 / Forge Neo neo-2.30 / Torch 2.13.0+cu130 / SFT INT8 ConvRot",
+  "seed": 123456,
+  "steps": 50,
+  "width": 1024,
+  "height": 1024,
+  "cfg": 3,
+  "sampler": "Euler",
+  "scheduler": "MOSS",
+  "results": [
+    {
+      "case": "portrait",
+      "mode": "Off",
+      "seconds": 21.42039190000014,
+      "params": {
+        "Emphasis": "None",
+        "MOSS Spectrum": "Off",
+        "Schedule type": "MOSS",
+        "MOSS sampling+decode seconds": 20.6386
+      }
+    },
+    {
+      "case": "portrait",
+      "mode": "Balanced",
+      "seconds": 15.604656599999544,
+      "params": {
+        "Emphasis": "None",
+        "MOSS Spectrum": "Balanced (approximate velocity forecasting)",
+        "Schedule type": "MOSS",
+        "MOSS sampling+decode seconds": 15.3419,
+        "MOSS Spectrum calls": "76 real, 24 forecast, 0 rejected",
+        "MOSS Spectrum cache MiB": 8.69
+      },
+      "real_calls": 76,
+      "forecast_calls": 24,
+      "mean_absolute_pixel_difference": 0.9396200180053711
+    },
+    {
+      "case": "hands",
+      "mode": "Off",
+      "seconds": 20.62549829999989,
+      "params": {
+        "MOSS Spectrum": "Off",
+        "Schedule type": "MOSS",
+        "MOSS sampling+decode seconds": 20.0694
+      }
+    },
+    {
+      "case": "hands",
+      "mode": "Balanced",
+      "seconds": 16.17018459999963,
+      "params": {
+        "MOSS Spectrum": "Balanced (approximate velocity forecasting)",
+        "Schedule type": "MOSS",
+        "MOSS sampling+decode seconds": 15.2931,
+        "MOSS Spectrum calls": "76 real, 24 forecast, 0 rejected",
+        "MOSS Spectrum cache MiB": 8.49
+      },
+      "real_calls": 76,
+      "forecast_calls": 24,
+      "mean_absolute_pixel_difference": 3.4755423069000244
+    }
+  ]
+}

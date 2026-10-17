@@ -194,6 +194,13 @@ class MossImageDiT(nn.Module):
         return layers, flags, all(c == UNCOND for c in chunks)
 
     def forward(self, x, timestep, context, transformer_options=None, **kwargs):
+        session = (transformer_options or {}).get('moss_spectrum_session')
+        if session is not None:
+            return session.run(self._forward_full, x, timestep, context,
+                               transformer_options=transformer_options, **kwargs)
+        return self._forward_full(x, timestep, context, transformer_options=transformer_options, **kwargs)
+
+    def _forward_full(self, x, timestep, context, transformer_options=None, **kwargs):
         """x (B, 128, H, W) latents, timestep (B,) = sigma, context (B, T, 4096) -> velocity (B, 128, H, W)."""
         b, _, h, w = x.shape
         device = x.device

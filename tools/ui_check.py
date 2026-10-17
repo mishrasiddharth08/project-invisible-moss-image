@@ -20,6 +20,8 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--port', type=int, default=7862)
     parser.add_argument('--generate', action='store_true')
+    parser.add_argument('--spectrum-benchmark', action='store_true')
+    parser.add_argument('--spectrum-cases', default='text,portrait,hands')
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
     opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
@@ -38,6 +40,8 @@ def main():
                   forge_additional_modules=[str(encoder), str(vae)],
                   forge_additional_modules_moss=[str(encoder), str(vae)],
                   outdir_samples=str(args.output/'images'), outdir_txt2img_samples=str(args.output/'images'))
+    if args.spectrum_benchmark:
+        config['persistent_cond_cache'] = False
     config_path = args.output/'isolated-config.json'
     config_path.write_text(json.dumps(config), encoding='utf-8')
     command = [str(args.forge/'venv/Scripts/python.exe'), '-u', 'launch.py', '--api',
@@ -77,17 +81,21 @@ def main():
             assert preset.get('value') == 'moss', preset.get('value')
             print('FULL_UI_PRESET_PASSED', checkpoint, modules, flush=True)
             report = {'preset': 'moss', 'checkpoint': checkpoint, 'modules': modules}
-            if args.generate:
+            if args.generate or args.spectrum_benchmark:
                 request('/sdapi/v1/options', {'sd_model_checkpoint': checkpoint,
                     'forge_additional_modules': modules, 'forge_preset': 'moss'})
                 started = time.perf_counter()
+                request('/sdapi/v1/options', {'moss_spectrum': 'Off'})
                 result = request('/sdapi/v1/txt2img', {'prompt': 'A red ceramic mug on a wooden table.',
-                    'negative_prompt': '', 'seed': 123456, 'width': 512, 'height': 512,
+                    'negative_prompt': '', 'seed': 123456,
+                    'width': 1024 if args.spectrum_benchmark else 512,
+                    'height': 1024 if args.spectrum_benchmark else 512,
                     'steps': 4, 'cfg_scale': 3, 'sampler_name': 'Euler', 'scheduler': 'MOSS',
                     'batch_size': 1, 'n_iter': 1, 'save_images': True}, timeout=180)
                 assert result.get('images'), result
                 image = Image.open(io.BytesIO(base64.b64decode(result['images'][0])))
-                assert image.size == (512, 512)
+                expected_size = 1024 if args.spectrum_benchmark else 512
+                assert image.size == (expected_size, expected_size)
                 assert any(a != b for a, b in image.convert('RGB').getextrema())
                 info = json.loads(result['info'])
                 assert info['all_seeds'] == [123456]
@@ -95,6 +103,49 @@ def main():
                 image.save(args.output/'api-result.png')
                 report.update(seconds=time.perf_counter()-started, info=info)
                 print('FULL_EXTENSIONS_API_GENERATION_PASSED', flush=True)
+            if args.spectrum_benchmark:
+                cases = [
+                    ('text', 'A realistic studio photograph of a red ceramic mug on a wooden table beside a white card reading "MOSS WORKS". Fine ceramic texture, soft natural window light.'),
+                    ('portrait', 'Photorealistic head and shoulders portrait of an adult woman aged 35, dark brown wavy hair, natural skin texture and freckles, softly lit by a window, ivory linen blouse, neutral studio background, 85mm lens, sharp eyes, subtle natural makeup.'),
+                    ('hands', 'A photorealistic closeup of two adult human hands carefully holding a small handmade ceramic cup, all fingers clearly visible and anatomically correct, natural skin creases, warm pottery studio window light, detailed editorial photograph.'),
+                ]
+                rows = []
+                import numpy as np
+                import re
+                for name, prompt in cases:
+                    if name not in args.spectrum_cases.split(','):
+                        continue
+                    # Warm this exact conditioning and attention shape before either timing.
+                    request('/sdapi/v1/options', {'moss_spectrum': 'Off'})
+                    request('/sdapi/v1/txt2img', {'prompt': prompt, 'negative_prompt': '',
+                        'seed': 123456, 'width': 1024, 'height': 1024, 'steps': 4,
+                        'cfg_scale': 3, 'sampler_name': 'Euler', 'scheduler': 'MOSS',
+                        'batch_size': 1, 'n_iter': 1, 'save_images': False}, timeout=180)
+                    baseline = None
+                    for mode in ('Off', 'Balanced'):
+                        request('/sdapi/v1/options', {'moss_spectrum': mode})
+                        started = time.perf_counter()
+                        result = request('/sdapi/v1/txt2img', {'prompt': prompt, 'negative_prompt': '',
+                            'seed': 123456, 'width': 1024, 'height': 1024, 'steps': 50,
+                            'cfg_scale': 3, 'sampler_name': 'Euler', 'scheduler': 'MOSS',
+                            'batch_size': 1, 'n_iter': 1, 'save_images': True}, timeout=240)
+                        elapsed = time.perf_counter()-started
+                        image = Image.open(io.BytesIO(base64.b64decode(result['images'][0]))).convert('RGB')
+                        image.save(args.output/f'{name}-{mode.lower()}.png')
+                        metadata = json.loads(result['info'])
+                        params = metadata.get('extra_generation_params', {})
+                        array = np.array(image, dtype=np.float32)
+                        row = dict(case=name, mode=mode, seconds=elapsed, params=params)
+                        if mode == 'Off':
+                            baseline = array
+                        else:
+                            counts = re.search(r'(\d+) real, (\d+) forecast', str(params.get('MOSS Spectrum calls')))
+                            assert counts and int(counts[2]) > 0, params
+                            row.update(real_calls=int(counts[1]), forecast_calls=int(counts[2]))
+                            row['mean_absolute_pixel_difference'] = float(np.abs(array-baseline).mean())
+                        rows.append(row)
+                        print('SPECTRUM_RESULT', json.dumps(row), flush=True)
+                report['spectrum'] = rows
             (args.output/'result.json').write_text(json.dumps(report, indent=2), encoding='utf-8')
         finally:
             try:

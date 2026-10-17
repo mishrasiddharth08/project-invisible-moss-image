@@ -24,3 +24,8 @@ configuration as Forge Neo ships it.
 
 The MOSS-Image weights are not part of this extension. They are released by the OpenMOSS Team under the Apache
 License 2.0 (https://huggingface.co/OpenMOSS-Team/MOSS-Image-SFT, https://huggingface.co/Comfy-Org/MOSS-Image).
+
+forge_moss/native/spectrum.py independently adapts the Chebyshev/ridge forecasting
+idea of Spectrum (Han et al., https://github.com/hanjq17/Spectrum, MIT-licensed
+reference implementation). It forecasts MOSS velocities rather than copying the
+upstream feature forecaster. No upstream Spectrum source is bundled.
