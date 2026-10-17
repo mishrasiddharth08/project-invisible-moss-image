@@ -1,11 +1,4 @@
-* text=auto
-*.py text eol=lf
-*.md text eol=lf
-*.json text eol=lf
-*.toml text eol=lf
-*.txt text eol=lf
-*.csv text eol=lf
-LICENSE text eol=lf
-*.mp4 binary
-*.jpg binary
+* text=auto eol=lf
 *.png binary
+*.jpg binary
+*.jpeg binary
