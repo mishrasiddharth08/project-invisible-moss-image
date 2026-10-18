@@ -23,9 +23,9 @@ class IndexedFile:
 
 class TestAutolink(unittest.TestCase):
     def modules(self, resolver=True):
-        checkpoint = Path("C:/models/moss.safetensors")
-        encoder = Path("C:/models/qwen35.safetensors")
-        vae = Path("C:/models/flux2-vae.safetensors")
+        checkpoint = Path("C:/models/moss.safetensors").resolve()
+        encoder = Path("C:/models/qwen35.safetensors").resolve()
+        vae = Path("C:/models/flux2-vae.safetensors").resolve()
         old_fp = Fingerprint("old")
         stale = IndexedFile(encoder, old_fp, ("qwen3vl_8b_qwen21",), 0.97, "int8_convrot")
         other = IndexedFile("C:/models/other.safetensors", old_fp, ("other",), 1.0, "bf16")
