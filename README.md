@@ -19,9 +19,9 @@ and add verified downloads and reproducible native checks.
 
 | File | Forge folder |
 | --- | --- |
-| `moss_image_sft_int8_convrot.safetensors` | `models/Stable-diffusion` |
-| `qwen3.5_9b_int8_convrot.safetensors` | `models/text_encoder` |
-| `flux2-vae.safetensors` | `models/VAE` |
+| `moss_image_sft_int8_convrot.safetensors` | `models/Stable-diffusion/MOSS` |
+| `qwen3.5_9b_int8_convrot.safetensors` | `models/text_encoder/MOSS` |
+| `flux2-vae.safetensors` | `models/VAE/MOSS` |
 
 Optional setup helper: `tools/download_models.py --forge "<Forge folder>"`.
 Run with Python 3.11+. It downloads about 15.5 GB, resumes partial files, and
@@ -124,3 +124,15 @@ Separate model files remain. Restart after extension updates.
 Extension: **AGPL-3.0**, [LICENSE](LICENSE). Preserved third-party terms:
 [NOTICE](NOTICE), [LICENSE-APACHE](LICENSE-APACHE). Weights are separate; check
 their publisher licenses. No credentials or model weights are included.
+
+## Latest bounded support audit
+
+54 CPU regressions and four native numerical adapter tests passed after strengthening
+encoder norm rank/shape validation. Existing INT8 checkpoint/encoder outputs remain
+exactly equal to the prior 1024-square 12-step fixed-seed baseline after reload.
+No compatible trained MOSS adapter was found among 622 local adapter headers.
+BF16 full-model and physical smaller-card tests remain blocked/untested. Earlier
+6-32 GiB Forge reservation runs are soft-policy simulations, not hard allocation caps
+or physical-card certification. Actual clicked UI acceptance remains unverified.
+
+Current release boundary and post-training plan: [Publication status](docs/PUBLICATION-STATUS.md).

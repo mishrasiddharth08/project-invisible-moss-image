@@ -44,3 +44,16 @@ class TestAssetDiscovery(unittest.TestCase):
             self.assertFalse(assets.valid_encoder(path))
             self.assertFalse(assets.valid_vae(path))
             self.assertIsNone(assets.discover(root))
+
+
+    def test_malformed_encoder_norm_is_rejected_with_clear_error(self):
+        source = json.loads((FIXTURES / 'qwen3.5_9b_int8_convrot.shapes.json').read_text())
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'qwen3.5-malformed.safetensors'
+            for shape in ([], [4096, 1], [1, 4096], [4095]):
+                with self.subTest(shape=shape):
+                    source['model.language_model.norm.weight']['shape'] = shape
+                    with self.assertRaisesRegex(ValueError, 'another size'):
+                        checkpoints.text_encoder_prefix(source)
+                    write_header(path, source)
+                    self.assertFalse(assets.valid_encoder(path))

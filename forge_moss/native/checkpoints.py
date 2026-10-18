@@ -48,7 +48,7 @@ def text_encoder_prefix(state_dict) -> str:
     prefix = next((p for p in TE_PREFIXES if all(f"{p}{k}" in state_dict for k in TE_KEYS)), None)
     if prefix is None:
         raise ValueError(MISSING_TE)
-    if shape_of(state_dict[f"{prefix}{TE_NORM}"])[0] != TE_HIDDEN:
+    if shape_of(state_dict[f"{prefix}{TE_NORM}"]) != (TE_HIDDEN,):
         raise ValueError(WRONG_TE)
     # Comfy-Org's validated release includes its vision tower, LM head and MTP head. A local Qwen-Image 2.1 PE file
     # kept the first two but removed MTP. That shape difference cannot prove weight provenance, so fail closed for
