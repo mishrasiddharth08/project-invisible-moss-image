@@ -136,3 +136,5 @@ BF16 full-model and physical smaller-card tests remain blocked/untested. Earlier
 or physical-card certification. Actual clicked UI acceptance remains unverified.
 
 Current release boundary and post-training plan: [Publication status](docs/PUBLICATION-STATUS.md).
+
+Current post-training evidence: [2026-10-18 validation](docs/POST-TRAINING-20261018.md). Training completed; bounded real generation tests passed. Remaining format, hardware and full-acceptance limits still apply.

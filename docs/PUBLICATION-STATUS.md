@@ -1,3 +1,5 @@
+Current status: [Post-training validation](POST-TRAINING-20261018.md) supersedes the earlier pause below.
+
 # Publication status — 2026-10-18
 
 GPU validation is paused while AI Toolkit training runs. No Forge restart, CUDA import/allocation, dependency installation or model download was performed for this publication. Resume only after confirmed training completion and safe Forge idle checks; elapsed time or a single utilization sample is insufficient.
