@@ -237,3 +237,13 @@ class MossImageDiT(nn.Module):
         out = self.final_norm_video(tokens[:, :image_tokens]) * (1 + head[:, 1, None]) + head[:, 0, None]
         out = self.final_linear_video(out.to(dtype))
         return out.transpose(1, 2).reshape(b, self.latent_channels, h, w)
+
+    def forecast_head(self, x, timestep, dtype, hidden):
+        """Recompute the native timestep-conditioned head on forecast image tokens."""
+        b, _, h, w = x.shape
+        time = self.time_embedding(time_embedding(timestep.reshape(-1).expand(b), self.freq_dim).to(dtype)).float()
+        head = self.video_head_modulation(time.to(dtype)).view(b, 2, -1)
+        res_dtype = torch.float32 if dtype == torch.float16 else dtype
+        hidden = hidden.to(device=x.device, dtype=res_dtype)
+        out = self.final_norm_video(hidden) * (1 + head[:, 1, None]) + head[:, 0, None]
+        return self.final_linear_video(out.to(dtype)).transpose(1, 2).reshape(b, self.latent_channels, h, w)

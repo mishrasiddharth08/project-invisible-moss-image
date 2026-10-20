@@ -11,3 +11,12 @@ jobs:
         with:
           python-version: '3.13'
       - run: python -B tools/lightweight_checks.py
+  speed-numerical:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: pip install torch --index-url https://download.pytorch.org/whl/cpu
+      - run: python -B tools/speed_cpu_checks.py

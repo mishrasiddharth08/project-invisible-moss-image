@@ -29,3 +29,18 @@ forge_moss/native/spectrum.py independently adapts the Chebyshev/ridge forecasti
 idea of Spectrum (Han et al., https://github.com/hanjq17/Spectrum, MIT-licensed
 reference implementation). It forecasts MOSS velocities rather than copying the
 upstream feature forecaster. No upstream Spectrum source is bundled.
+
+The preceding statement applies only to spectrum.py (Balanced mode).
+forge_moss/native/spectrum_policy.py now extracts the predictor, branch state,
+configuration and adaptive/manual scheduling from Rkkss/ComfyUI-Spectrum-MOSS
+nodes.py, revision 3fde0674b29342565e7f42a0674af48d65aabc4a, Copyright Rkkss
+and contributors, GPL-3.0-only (LICENSE-SPECTRUM). That source credits Han et al.'s
+Spectrum method and awdqwdasdg's GPL Comfyui-Spectrum-Qwen2.1 implementation.
+spectrum_hidden.py provides the separate native Forge lifecycle/head adapter.
+The extension's combined distribution remains AGPL-3.0; preserved GPL notices
+and corresponding vendored source are included.
+
+Optional DMD weights: lodestones/MOSS-Image-SFT-8-steps-dmd, revision
+f95df83b5e90ae91ea412434b3f9b7f1c8c6314f, Apache-2.0. Weights are not bundled.
+tests/fixtures/dmd-latest-header.json contains tensor names/shapes/dtypes/offsets
+and metadata only, read with a bounded HTTP Range request; no tensor payload.

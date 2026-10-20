@@ -41,6 +41,7 @@ def register() -> None:
     if 'moss_spectrum' not in shared.opts.data_labels:
         import gradio as gr
         shared.opts.add_option('moss_spectrum', OptionInfo('Off', '[MOSS] Spectrum acceleration', gr.Dropdown,
-            {'choices': ['Off', 'Balanced']}, section=SECTION, category_id=CATEGORY,
+            {'choices': ['Off', 'Balanced', 'Manual', 'Adaptive']}, section=SECTION, category_id=CATEGORY,
             infotext='MOSS Spectrum mode').info(
-                'Balanced forecasts some steps and changes the result. Euler + MOSS only; Off preserves full inference.'))
+                'Approximate acceleration; Euler + MOSS only. Inline controls select manual/adaptive hidden-state '
+                'forecasting. Off preserves full inference. DMD forces Spectrum Off.'))

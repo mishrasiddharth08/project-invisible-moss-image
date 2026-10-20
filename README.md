@@ -130,7 +130,8 @@ their publisher licenses. No credentials or model weights are included.
 54 CPU regressions and four native numerical adapter tests passed after strengthening
 encoder norm rank/shape validation. Existing INT8 checkpoint/encoder outputs remain
 exactly equal to the prior 1024-square 12-step fixed-seed baseline after reload.
-No compatible trained MOSS adapter was found among 622 local adapter headers.
+The earlier audit found no compatible trained MOSS adapter among 622 local headers;
+the newly supported optional DMD LoRA has a separate validation boundary below.
 BF16 full-model and physical smaller-card tests remain blocked/untested. Earlier
 6-32 GiB Forge reservation runs are soft-policy simulations, not hard allocation caps
 or physical-card certification. Actual clicked UI acceptance remains unverified.
@@ -138,3 +139,6 @@ or physical-card certification. Actual clicked UI acceptance remains unverified.
 Current release boundary and post-training plan: [Publication status](docs/PUBLICATION-STATUS.md).
 
 Current post-training evidence: [2026-10-18 validation](docs/POST-TRAINING-20261018.md). Training completed; bounded real generation tests passed. Remaining format, hardware and full-acceptance limits still apply.
+
+Optional inline Spectrum Manual/Adaptive controls and the pinned 8-step SFT DMD
+LoRA preset: [setup, upstream attribution and current validation limits](docs/SPEED.md).

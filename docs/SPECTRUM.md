@@ -1,5 +1,9 @@
 # Optional Spectrum-style acceleration
 
+This page describes the original **Balanced** mode. New inline Manual/Adaptive
+hidden-state forecasting and the DMD preset are documented in [SPEED.md](SPEED.md),
+including their separate upstream license and current validation boundary.
+
 MOSS did not previously use Spectrum. This package adds an independent,
 velocity-level adaptation of the Chebyshev/ridge forecasting idea in
 [Spectrum](https://github.com/hanjq17/Spectrum). It is not the upstream
