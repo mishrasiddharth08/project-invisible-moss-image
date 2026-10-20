@@ -1,3 +1,5 @@
+Current inline Spectrum/DMD runtime update: [2026-10-20 bounded live verification](LIVE-20261020.md). The historical broader audit and its remaining limits follow.
+
 Current status: [Post-training validation](POST-TRAINING-20261018.md) supersedes the earlier pause below.
 
 # Publication status — 2026-10-18

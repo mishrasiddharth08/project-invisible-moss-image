@@ -38,7 +38,20 @@ class Script(scripts.Script):
             'MOSS adaptive cap', 'MOSS tolerance', 'MOSS cache', 'MOSS cache MiB']))
         return controls
 
-    def process(self, p, mode=None, dmd=False, strength=0.7, warmup=8, tail=2,
+    def process(self, p, *args, **kwargs):
+        try:
+            return self._configure(p, *args, **kwargs)
+        except (ValueError, TypeError, OverflowError, OSError) as error:
+            # Forge logs and swallows exceptions raised by Script.process.
+            # p.init is a request-owned core entry point outside that callback
+            # catch, before LoRA activation, conditioning and sampling.
+            message = str(error)
+            p.extra_generation_params['MOSS validation error'] = message
+            def reject(*unused_args, **unused_kwargs):
+                raise ValueError(message)
+            p.init = reject
+
+    def _configure(self, p, mode=None, dmd=False, strength=0.7, warmup=8, tail=2,
                 horizon=2, guard=8, cap=6, tolerance=1, cache='cpu', memory=512):
         from forge_moss.native.spectrum_policy import SpectrumConfig
         mode = mode or getattr(shared.opts, 'moss_spectrum', 'Off')

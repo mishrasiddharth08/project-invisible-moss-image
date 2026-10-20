@@ -142,3 +142,5 @@ Current post-training evidence: [2026-10-18 validation](docs/POST-TRAINING-20261
 
 Optional inline Spectrum Manual/Adaptive controls and the pinned 8-step SFT DMD
 LoRA preset: [setup, upstream attribution and current validation limits](docs/SPEED.md).
+
+Latest bounded runtime results: [2026-10-20 inline Spectrum and DMD verification](docs/LIVE-20261020.md). Includes cancellation/error recovery and measured speed limits; no universal quality or hardware certification.

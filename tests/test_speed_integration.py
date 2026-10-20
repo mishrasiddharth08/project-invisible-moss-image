@@ -145,10 +145,22 @@ class SpeedIntegration(unittest.TestCase):
 
     def test_nonfinite_controls_and_missing_dmd_fail_clearly(self):
         for kwargs in [{'tolerance': float('nan')}, {'cache': 'unknown'}, {'tail': 0}]:
+            request = Request()
+            script().process(request, 'Adaptive', **kwargs)
             with self.assertRaises(ValueError):
-                script().process(Request(), 'Adaptive', **kwargs)
+                request.init()
         with self.assertRaisesRegex(ValueError, 'missing or hash mismatch'):
             dmd.verified_adapter(SimpleNamespace(available_networks={}))
+
+    def test_rejection_survives_forge_swallowing_script_callback_errors(self):
+        request = Request()
+        with patch('forge_moss.native.dmd.apply', side_effect=ValueError('unsupported adapter pairing')):
+            # Forge may swallow callback exceptions, but the core request init
+            # must still fail before another model path can generate an image.
+            script().process(request, 'Adaptive', True)
+        self.assertIn('unsupported adapter pairing', request.extra_generation_params['MOSS validation error'])
+        with self.assertRaisesRegex(ValueError, 'unsupported adapter pairing'):
+            request.init([], [], [])
 
 
 if __name__ == '__main__':

@@ -46,22 +46,19 @@ unsupported. The base checkpoint and encoder precision policy is unchanged.
 
 ## Validation boundary (2026-10-20)
 
-CPU numerical checks cover the native head, real versus forecast scheduling,
-CFG separation, cache limits, step rewind, hook removal on failure, DMD routing
-and all 252 adapter targets. The installed Gradio panel is built in memory to
-check controls and absence of accordions. CI runs the numerical subset on CPU.
-The local full CPU suite passed 63 tests; the installed Forge adapter class was
-skipped because it initializes the GPU backend. The numerical CI entry point
-passed 22 tests locally and the existing no-Torch subset passed 12 (overlapping
-suites, not additive). The real Gradio 4.40 panel was constructed successfully
-with all 11 inline controls and no accordion. All 756 DMD adapter tensors were
-read on CPU, float32 and finite, with 252 alpha values equal to 128. These checks
-prove file loadability and routing dimensions, not inference or visual quality.
+[Bounded live verification](LIVE-20261020.md) records 12 complete real native
+Gradio generations, served inline UI checks, fixed-seed determinism, DMD
+activation/unpatch, native cancellation, clear validation failure and exact recovery
+on one RTX 5090 32 GB with INT8 ConvRot checkpoint/encoder. User configuration
+remained byte-identical. Manual CPU caching was slower than the warm baseline;
+Adaptive GPU caching was about 1.33× faster in the tested scene.
 
-No new real-image, speed, visual-quality, INT8 DMD, BF16 or physical-card results
-are claimed for this integration. During local preparation Forge reported busy;
-its running process was preserved. The requested DMD LoRA was installed locally
-and its complete file size and SHA256 verified; model execution is still pending.
-UI restart, sequential fixed-seed Off/Manual/Adaptive comparisons and DMD
-generation, timings, memory and cancellation/recovery remain pending. Historical
-MOSS results elsewhere in this repository predate these features.
+Live testing found Forge swallowed Script.process validation errors. Invalid
+settings now reject through a request-owned core-init guard before conditioning
+and sampling. The real invalid DMD/additional-LoRA request returned no image.
+
+64 CPU regressions passed; the installed Forge adapter class was skipped in that
+suite because it initializes CUDA. All 756 DMD tensors are float32, CPU-readable
+and finite; all 252 targets/dimensions match both checkpoint header profiles.
+These results do not certify other prompts, BF16 full-model inference, physical
+smaller cards, arbitrary adapters, long-run leaks or every blueprint requirement.

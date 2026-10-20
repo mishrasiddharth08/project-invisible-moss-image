@@ -20,6 +20,7 @@ venv\Scripts\python.exe -m unittest discover -s "<extension>\tests" -p test_nati
 These tests prove key routing and numerical merging for small synthetic
 adapters. The optional latest DMD LoRA is now recognized with a pinned identity;
 its 252 targets and dimensions match both shipped INT8 and BF16 checkpoint
-headers. Its full-weight runtime loading, visual effect and quality remain
-untested; see [SPEED.md](SPEED.md). Quantized numerical evidence covers the released INT8 ConvRot route;
+headers. Its INT8-route runtime loading, repeat determinism, pixel effect and exact
+unpatch recovery passed bounded live tests; see [SPEED.md](SPEED.md). Broad quality
+claims and full BF16 adapter runtime tests remain unverified. Quantized numerical evidence covers the released INT8 ConvRot route;
 other quantization formats require their own real-file checks.
