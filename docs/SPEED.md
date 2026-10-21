@@ -1,7 +1,10 @@
 # Optional MOSS speed controls
 
-The always-visible MOSS panel has inline controls; it creates no accordion.
-They appear after a normal Forge restart. Existing global settings remain a
+The **MOSS Spectrum / DMD** panel uses a native collapsible accordion on both
+txt2img and img2img. It starts open, preserving the previous visible controls;
+click its header to collapse or expand it. Toggling does not reset control values
+or change the 11 script argument positions. It appears after a normal Forge
+restart. Existing global settings remain a
 fallback for API callers without script arguments. All defaults are Off.
 
 - **Balanced** retains the prior bounded velocity-forecast adapter.
@@ -18,6 +21,13 @@ fallback for API callers without script arguments. All defaults are Off.
   bounds retained context/anchors, not total process memory or forecast scratch.
   A low limit may prevent acceleration. Forecasting changes results; no speed
   or quality ratio is promised. Upstream recommends 50 steps and tested Euler.
+
+UI verification on 2026-10-21: the actual installed UI was served in an isolated
+CPU-only Gradio 4.40 preview. Chromium DOM clicks verified three independent
+collapse/expand cycles on both panels, reducing rendered height from about
+325 px to 42 px and retaining edited values 1.15 and 0.85. All 65 CPU regressions
+passed (the Forge GPU-backend adapter class was skipped). Forge was not started
+for this UI-only check; no model generation or inference code changed.
 
 ## Optional 8-step DMD preset
 
@@ -51,7 +61,7 @@ Gradio generations, served inline UI checks, fixed-seed determinism, DMD
 activation/unpatch, native cancellation, clear validation failure and exact recovery
 on one RTX 5090 32 GB with INT8 ConvRot checkpoint/encoder. User configuration
 remained byte-identical. Manual CPU caching was slower than the warm baseline;
-Adaptive GPU caching was about 1.33× faster in the tested scene.
+Adaptive GPU caching was about 1.33Ã— faster in the tested scene.
 
 Live testing found Forge swallowed Script.process validation errors. Invalid
 settings now reject through a request-owned core-init guard before conditioning

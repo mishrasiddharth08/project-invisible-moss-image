@@ -130,7 +130,7 @@ class SpeedIntegration(unittest.TestCase):
         hook.process_before_every_sampling(p)
         self.assertFalse(hasattr(p, '_moss_spectrum_session'))
 
-    def test_inline_ui_has_no_accordion(self):
+    def test_speed_controls_have_one_native_open_accordion(self):
         try:
             import gradio as gr
         except ImportError:
@@ -139,9 +139,28 @@ class SpeedIntegration(unittest.TestCase):
             controls = script().ui(False)
         self.assertEqual(len(controls), 11)
         config = panel.get_config_file()
-        self.assertFalse(any(c['type'] == 'accordion' for c in config['components']))
+        accordions = [c for c in config['components'] if c['type'] == 'accordion']
+        self.assertEqual(len(accordions), 1)
+        self.assertEqual(accordions[0]['props']['label'], 'MOSS Spectrum / DMD')
+        self.assertTrue(accordions[0]['props']['open'])
+        self.assertEqual(accordions[0]['props']['elem_id'], 'moss_speed_txt2img')
         self.assertEqual(controls[0].choices, [('Off', 'Off'), ('Balanced', 'Balanced'),
                                               ('Manual', 'Manual'), ('Adaptive', 'Adaptive')])
+
+    def test_panel_ids_and_input_order_are_preserved_on_both_forge_pages(self):
+        try:
+            import gradio as gr
+        except ImportError:
+            self.skipTest('Gradio is optional in CPU-only CI')
+        with gr.Blocks() as panel:
+            text = script().ui(False)
+            image = script().ui(True)
+        accordions = [c for c in panel.get_config_file()['components'] if c['type'] == 'accordion']
+        self.assertEqual({c['props']['elem_id'] for c in accordions},
+                         {'moss_speed_txt2img', 'moss_speed_img2img'})
+        self.assertEqual(len(text), 11)
+        self.assertEqual([c.label for c in text], [c.label for c in image])
+        self.assertEqual([c.value for c in text], [c.value for c in image])
 
     def test_nonfinite_controls_and_missing_dmd_fail_clearly(self):
         for kwargs in [{'tolerance': float('nan')}, {'cache': 'unknown'}, {'tail': 0}]:

@@ -1,4 +1,4 @@
-"""Inline, request-scoped MOSS acceleration controls; no accordion."""
+"""Request-scoped MOSS acceleration controls in a native collapsible panel."""
 import time
 import math
 
@@ -16,7 +16,8 @@ class Script(scripts.Script):
 
     def ui(self, is_img2img):
         import gradio as gr
-        with gr.Group():
+        with gr.Accordion('MOSS Spectrum / DMD', open=True,
+                          elem_id=f'moss_speed_{"img2img" if is_img2img else "txt2img"}'):
             with gr.Row():
                 mode = gr.Dropdown(['Off', 'Balanced', 'Manual', 'Adaptive'],
                     value=getattr(shared.opts, 'moss_spectrum', 'Off'), label='MOSS Spectrum (approximate)')
